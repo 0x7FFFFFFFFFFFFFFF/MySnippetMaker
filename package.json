@@ -1,0 +1,69 @@
+{
+    "name": "mysnippetmaker",
+    "displayName": "MySnippetMaker",
+    "description": "With this extension you can easily create snippets",
+    "version": "0.0.1",
+    "publisher": "yangshuai",
+    "engines": {
+        "vscode": "^1.26.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "onCommand:extension.replaceWithTabStopSyntax",
+        "onCommand:extension.resetTabStopCounter",
+        "onCommand:extension.escapeSpecialSnippetCharacters",
+        "onCommand:extension.saveAsSnippet"
+    ],
+    "main": "./out/extension",
+    "contributes": {
+        "commands": [
+            {
+                "command": "extension.replaceWithTabStopSyntax",
+                "title": "Edde: Replace selection with tab stop syntax like ${10:name}"
+            },
+            {
+                "command": "extension.resetTabStopCounter",
+                "title": "Edde: Reset tab stop counter to 10"
+            },
+            {
+                "command": "extension.escapeSpecialSnippetCharacters",
+                "title": "Edde: Escape special snippet characters"
+            },
+            {
+                "command": "extension.saveAsSnippet",
+                "title": "Edde: Save current file as a snippet"
+            }
+        ],
+        "keybindings": [
+            {
+                "command": "extension.replaceWithTabStopSyntax",
+                "key": "ctrl+shift+x"
+            },
+            {
+                "command": "extension.resetTabStopCounter",
+                "key": "ctrl+shift+alt+pagedown"
+            },
+            {
+                "command": "extension.saveAsSnippet",
+                "key": "ctrl+shift+z"
+            }
+        ]
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "postinstall": "node ./node_modules/vscode/bin/install",
+        "test": "npm run compile && node ./node_modules/vscode/bin/test"
+    },
+    "devDependencies": {
+        "@types/mocha": "^2.2.42",
+        "@types/node": "^7.0.43",
+        "gulp": "^3.9.1",
+        "tslint": "^5.8.0",
+        "typescript": "^2.6.1",
+        "vscode": "^1.1.6"
+    }
+}
