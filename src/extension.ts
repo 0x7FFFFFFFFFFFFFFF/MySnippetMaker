@@ -61,7 +61,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     disposable = vscode.commands.registerCommand('extension.resetTabStopCounter', () => {
         context.globalState.update("counter", 0);
-        console.log("Tab stop counter reset to 10");
+        vscode.window.showInformationMessage("Tab stop counter reset to 10");
     });
 
     context.subscriptions.push(disposable);
