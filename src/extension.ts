@@ -98,27 +98,27 @@ export function activate(context: vscode.ExtensionContext) {
             return;
         }
 
-        let text = editor.document.getText()
-        let text_bak = text;
+        let text = editor.document.getText();
 
-        const text_range = new vscode.Range(editor.document.positionAt(0), editor.document.positionAt(text.length - 1));
+        // const text_range = new vscode.Range(editor.document.positionAt(0), editor.document.positionAt(text.length - 1));
+        let snippet_name;
 
         let o = my_split(text);
         let line = o.line;
         let other = o.other;
-        let snippet_name = ((/^Name:\s*(.*)+$/im).exec(line))[1];
+        snippet_name = ((/^Name:\s*(.*)+$/im).exec(line))![1];
 
         o = my_split(other);
         line = o.line;
         other = o.other;
         let snippet_scope, first_scope, snippet_prefix = null;
         try {
-            snippet_scope = ((/^Scope:\s*(.*)+$/im).exec(line))[1];
+            snippet_scope = ((/^Scope:\s*(.*)+$/im).exec(line))![1];
             first_scope = snippet_scope.split(/\s*,\s*/)[0];
         } catch {
             snippet_scope = first_scope = "";
             try {
-                snippet_prefix = ((/^Prefix:\s*(.*)+$/im).exec(line))[1];
+                snippet_prefix = ((/^Prefix:\s*(.*)+$/im).exec(line))![1];
             } catch {
                 snippet_prefix = null
             }
@@ -130,7 +130,7 @@ export function activate(context: vscode.ExtensionContext) {
             other = o.other;
         }
 
-        snippet_prefix = ((/^Prefix:\s*(.*)+$/im).exec(line))[1];
+        snippet_prefix = ((/^Prefix:\s*(.*)+$/im).exec(line))![1];
 
         o = my_split(other);
         line = o.line;
@@ -175,11 +175,11 @@ export function activate(context: vscode.ExtensionContext) {
 
         text = snippet_json_string + newline + newline + "// " + text.replace(/\n/g, "\n// ");
 
-        let is_portable = false;
+        // let is_portable = false;
         let portable_data_path = process.env['VSCODE_PORTABLE'];
-        if (portable_data_path && fs.existsSync(portable_data_path)) {
-            is_portable = true;
-        }
+        // if (portable_data_path && fs.existsSync(portable_data_path)) {
+        //     is_portable = true;
+        // }
 
         let snippet_folder = path.join(portable_data_path, "user-data/User/snippets");
 
