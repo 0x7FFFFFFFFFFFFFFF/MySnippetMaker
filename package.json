@@ -2,7 +2,7 @@
     "name": "mysnippetmaker",
     "displayName": "MySnippetMaker",
     "description": "With this extension you can easily create snippets",
-    "version": "0.0.1",
+    "version": "0.0.3",
     "publisher": "yangshuai",
     "engines": {
         "vscode": "^1.26.0"
@@ -10,6 +10,18 @@
     "categories": [
         "Other"
     ],
+    "author": {
+        "name": "Yang Shuai",
+        "email": "yangshuai@gmail.com",
+        "url": "https://github.com/yangshuairocks/MySnippetMaker"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/yangshuairocks/MySnippetMaker"
+    },
+    "bugs": {
+        "url": "https://github.com/yangshuairocks/MySnippetMaker/issues"
+    },
     "activationEvents": [
         "onCommand:extension.replaceWithTabStopSyntax",
         "onCommand:extension.resetTabStopCounter",
@@ -20,6 +32,7 @@
         "snippet",
         "snippets"
     ],
+    "icon": "images/favicon.gif",
     "main": "./out/extension",
     "contributes": {
         "commands": [
