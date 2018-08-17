@@ -49,6 +49,12 @@
                 "command": "extension.saveAsSnippet",
                 "key": "ctrl+shift+z"
             }
+        ],
+        "snippets": [
+            {
+                "language": "",
+                "path": ""
+            }
         ]
     },
     "scripts": {
