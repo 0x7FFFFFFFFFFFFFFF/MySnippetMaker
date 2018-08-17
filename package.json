@@ -16,6 +16,10 @@
         "onCommand:extension.escapeSpecialSnippetCharacters",
         "onCommand:extension.saveAsSnippet"
     ],
+    "keywords": [
+        "snippet",
+        "snippets"
+    ],
     "main": "./out/extension",
     "contributes": {
         "commands": [
@@ -53,7 +57,7 @@
         "snippets": [
             {
                 "language": "",
-                "path": ""
+                "path": "./snippets/[Ultimate snippet template].code-snippets"
             }
         ]
     },
