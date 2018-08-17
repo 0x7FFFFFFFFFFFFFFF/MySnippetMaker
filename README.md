@@ -1,6 +1,7 @@
 ## Introduction
 
 This is a *Visual Studio Code* extension to help you write user snippets quickly.
+![Feature demonstration](https://raw.githubusercontent.com/yangshuairocks/MySnippetMaker/master/images/mysnippetmaker_intro.gif)
 
 ## Features
 
@@ -9,6 +10,10 @@ This is a *Visual Studio Code* extension to help you write user snippets quickly
 - Able to reset tab stop counter
 - Provide an intuitive way to create a snippet
 - The extension will help to translate the user-friendly snippet syntax to Visual Studio Code native snippet
+
+## Installation
+
+![How to install](https://raw.githubusercontent.com/yangshuairocks/MySnippetMaker/master/images/mysnippetmaker_install.gif)
 
 ## License
 
