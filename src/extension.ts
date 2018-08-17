@@ -153,35 +153,42 @@ export function activate(context: vscode.ExtensionContext) {
         let snippet_json_string = JSON.stringify(snippet_object);
 
         const osName = os.type();
-        var newline = "\r\n";
+        let newline = "\r\n", user_directory;
         switch (osName) {
             case ("Darwin"): {
                 newline = "\n";
+                user_directory = process.env.HOME + "/Library/Application Support/Code/User/";
                 break;
             }
             case ("Linux"): {
                 newline = "\n";
+                user_directory = process.env.HOME + "/.config/Code/User/";
                 break;
             }
             case ("Windows_NT"): {
                 newline = "\r\n";
+                user_directory = process.env.APPDATA + "\\Code\\User\\";
                 break;
             }
             default: {
-                newline = "\r\n";
+                newline = "\n";
+                user_directory = process.env.HOME + "/.config/Code/User/";
                 break;
             }
         }
 
         text = snippet_json_string + newline + newline + "// " + text.replace(/\n/g, "\n// ");
 
-        // let is_portable = false;
-        let portable_data_path = process.env['VSCODE_PORTABLE'];
-        // if (portable_data_path && fs.existsSync(portable_data_path)) {
-        //     is_portable = true;
-        // }
 
-        let snippet_folder = path.join(portable_data_path, "user-data/User/snippets");
+        let snippet_folder;
+        let portable_data_path = process.env['VSCODE_PORTABLE'];
+        if (portable_data_path && fs.existsSync(portable_data_path)) {
+            // If in portable mode
+            snippet_folder = path.join(portable_data_path, "user-data/User/snippets");
+        }
+        else {
+            snippet_folder = path.join(user_directory, "snippets");
+        }
 
         var writeStream = fs.createWriteStream(path.join(snippet_folder, snippet_file_name));
         writeStream.write(text);
