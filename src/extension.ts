@@ -23,7 +23,7 @@ function my_split(text: string) {
 }
 
 export function activate(context: vscode.ExtensionContext) {
-
+    
     let disposable = vscode.commands.registerCommand('extension.replaceWithTabStopSyntax', () => {
         // The code you place here will be executed every time your command is executed
 
@@ -53,6 +53,32 @@ export function activate(context: vscode.ExtensionContext) {
         // Replace selected text with tab stop syntax
         editor.edit(builder => {
             builder.replace(selection, '${' + counter + ':' + text + '}');
+        });
+    });
+
+    context.subscriptions.push(disposable);
+
+    disposable = vscode.commands.registerCommand('extension.replaceWithTabStopChoiceSyntax', () => {
+        // The code you place here will be executed every time your command is executed
+
+        let editor = vscode.window.activeTextEditor;
+
+        if (!editor) {
+            return;
+        }
+
+        // Get the counter to be used in current tab stop
+        let counter = context.globalState.get("counter", 10);
+        counter = counter + 10;
+        context.globalState.update("counter", counter);
+
+        // Get selected text
+        let selection = editor.selection;
+        let text = editor.document.getText(selection);
+
+        // Replace selected text with choice tab stop syntax
+        editor.edit(builder => {
+            builder.replace(selection, '${' + counter + '|' + text + '|}');
         });
     });
 
