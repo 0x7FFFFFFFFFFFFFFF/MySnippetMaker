@@ -127,7 +127,7 @@ export function activate(context: vscode.ExtensionContext) {
         let text = editor.document.getText();
 
         // const text_range = new vscode.Range(editor.document.positionAt(0), editor.document.positionAt(text.length - 1));
-        let snippet_name;
+        let snippet_name:any;
 
         let o = my_split(text);
         let line = o.line;
@@ -137,7 +137,7 @@ export function activate(context: vscode.ExtensionContext) {
         o = my_split(other);
         line = o.line;
         other = o.other;
-        let snippet_scope, first_scope, snippet_prefix = null;
+        let snippet_scope:any, first_scope:any, snippet_prefix:any = null;
         try {
             snippet_scope = ((/^Scope:\s*(.*)+$/im).exec(line))![1];
             first_scope = snippet_scope.split(/\s*,\s*/)[0];
@@ -157,26 +157,12 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         snippet_prefix = ((/^Prefix:\s*(.*)+$/im).exec(line))![1];
+        // Break it into parts
+        snippet_prefix = snippet_prefix.split(/\s*,\s*/g);
 
         o = my_split(other);
         line = o.line;
         let snippet_body = o.other;
-
-        let snippet_file_name = "[" + snippet_name + "].code-snippets";
-        if (first_scope != "") {
-            snippet_file_name = first_scope + "." + snippet_file_name;
-        }
-
-        snippet_file_name = snippet_file_name.replace(/[/\\?%*:|"<>]/g, "").replace(/\s{2,}/g, " ");
-
-        let snippet_object = {};
-        snippet_object[snippet_name] = {};
-        snippet_object[snippet_name]["scope"] = snippet_scope;
-        snippet_object[snippet_name]["prefix"] = snippet_prefix;
-        snippet_object[snippet_name]["body"] = [snippet_body];
-        snippet_object[snippet_name]["description"] = snippet_name;
-
-        let snippet_json_string = JSON.stringify(snippet_object);
 
         const osName = os.type();
         let newline = "\r\n", user_directory;
@@ -203,10 +189,7 @@ export function activate(context: vscode.ExtensionContext) {
             }
         }
 
-        text = snippet_json_string + newline + newline + "// " + text.replace(/\n/g, "\n// ");
-
-
-        let snippet_folder;
+        let snippet_folder:any;
         let portable_data_path = process.env['VSCODE_PORTABLE'];
         if (portable_data_path && fs.existsSync(portable_data_path)) {
             // If in portable mode
@@ -216,11 +199,35 @@ export function activate(context: vscode.ExtensionContext) {
             snippet_folder = path.join(user_directory, "snippets");
         }
 
-        var writeStream = fs.createWriteStream(path.join(snippet_folder, snippet_file_name));
-        writeStream.write(text);
-        writeStream.end();
 
-        vscode.window.showInformationMessage(snippet_file_name + " created!");
+        snippet_prefix.forEach((e: string) => {
+            let snippet_object = {};
+            snippet_object[snippet_name] = {};
+            snippet_object[snippet_name]["scope"] = snippet_scope;
+            snippet_object[snippet_name]["prefix"] = e;
+            snippet_object[snippet_name]["body"] = [snippet_body];
+            snippet_object[snippet_name]["description"] = snippet_name;
+    
+            let snippet_json_string = JSON.stringify(snippet_object);
+    
+            text = snippet_json_string + newline + newline + "// " + text.replace(/\n/g, "\n// ");
+    
+            let snippet_file_name = "[" + e + " - " + snippet_name + "].code-snippets";
+            if (first_scope != "") {
+                snippet_file_name = first_scope + "." + snippet_file_name;
+            }
+    
+            snippet_file_name = snippet_file_name.replace(/[/\\?%*:|"<>]/g, "").replace(/\s{2,}/g, " ");
+    
+            var writeStream = fs.createWriteStream(path.join(snippet_folder, snippet_file_name));
+            writeStream.write(text);
+            writeStream.end();
+    
+            vscode.window.showInformationMessage(snippet_file_name + " created!");            
+            
+        });
+
+
     });
 
     context.subscriptions.push(disposable);
