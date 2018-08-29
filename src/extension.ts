@@ -146,7 +146,7 @@ export function activate(context: vscode.ExtensionContext) {
             try {
                 snippet_prefix = ((/^Prefix:\s*(.*)+$/im).exec(line))![1];
             } catch {
-                snippet_prefix = null
+                snippet_prefix = null;
             }
         }
 
@@ -208,10 +208,10 @@ export function activate(context: vscode.ExtensionContext) {
             snippet_object[snippet_name]["body"] = [snippet_body];
             snippet_object[snippet_name]["description"] = snippet_name;
     
-            let snippet_json_string = JSON.stringify(snippet_object);
-    
+            let snippet_json_string = JSON.stringify(snippet_object, null, 4);
+            
             text = snippet_json_string + newline + newline + "// " + text.replace(/\n/g, "\n// ");
-    
+
             let snippet_file_name = "[" + e + " - " + snippet_name + "].code-snippets";
             if (first_scope != "") {
                 snippet_file_name = first_scope + "." + snippet_file_name;
@@ -223,7 +223,7 @@ export function activate(context: vscode.ExtensionContext) {
             writeStream.write(text);
             writeStream.end();
     
-            vscode.window.showInformationMessage(snippet_file_name + " created!");            
+            vscode.window.showInformationMessage(snippet_file_name + " created!");
             
         });
 
