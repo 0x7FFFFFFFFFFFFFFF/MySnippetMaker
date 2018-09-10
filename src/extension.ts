@@ -23,7 +23,7 @@ function my_split(text: string) {
 }
 
 export function activate(context: vscode.ExtensionContext) {
-    
+
     let disposable = vscode.commands.registerCommand('extension.replaceWithTabStopSyntax', () => {
         // The code you place here will be executed every time your command is executed
 
@@ -75,6 +75,21 @@ export function activate(context: vscode.ExtensionContext) {
         // Get selected text
         let selection = editor.selection;
         let text = editor.document.getText(selection);
+
+        // Support multi-line choices
+        if(!selection.isSingleLine) {
+            var r;
+            text = ((function() {
+                var i, len, ref, results;
+                ref = text.split(/\r?\n/);
+                results = [];
+                for (i = 0, len = ref.length; i < len; i++) {
+                r = ref[i];
+                    results.push(r.replace(",", "\\,"));
+                }
+                return results;
+            })()).join(",");
+        }
 
         // Replace selected text with choice tab stop syntax
         editor.edit(builder => {
@@ -207,24 +222,24 @@ export function activate(context: vscode.ExtensionContext) {
             snippet_object[snippet_name]["prefix"] = e;
             snippet_object[snippet_name]["body"] = [snippet_body];
             snippet_object[snippet_name]["description"] = snippet_name;
-    
+
             let snippet_json_string = JSON.stringify(snippet_object, null, 4);
-            
+
             text = snippet_json_string + newline + newline + "// " + text.replace(/\n/g, "\n// ");
 
             let snippet_file_name = "[" + e + " - " + snippet_name + "].code-snippets";
             if (first_scope != "") {
                 snippet_file_name = first_scope + "." + snippet_file_name;
             }
-    
+
             snippet_file_name = snippet_file_name.replace(/[/\\?%*:|"<>]/g, "").replace(/\s{2,}/g, " ");
-    
+
             var writeStream = fs.createWriteStream(path.join(snippet_folder, snippet_file_name));
             writeStream.write(text);
             writeStream.end();
-    
+
             vscode.window.showInformationMessage(snippet_file_name + " created!");
-            
+
         });
 
 
