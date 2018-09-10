@@ -22,6 +22,41 @@ function my_split(text: string) {
     return result;
 }
 
+/** Function that count occurrences of a substring in a string;
+ * @param {String} string               The string
+ * @param {String} subString            The sub string to search for
+ * @param {Boolean} [allowOverlapping]  Optional. (Default:false)
+ *
+ * @author Vitim.us https://gist.github.com/victornpb/7736865
+ * @see Unit Test https://jsfiddle.net/Victornpb/5axuh96u/
+ * @see http://stackoverflow.com/questions/4009756/how-to-count-string-occurrence-in-string/7924240#7924240
+ */
+function occurrences(string:any, subString:any, allowOverlapping:boolean) {
+
+    string += "";
+    subString += "";
+    if (subString.length <= 0) {
+        return (string.length + 1);
+    }
+
+    var n = 0,
+        pos = 0,
+        step = allowOverlapping ? 1 : subString.length;
+
+    while (true) {
+        pos = string.indexOf(subString, pos);
+        if (pos >= 0) {
+            ++n;
+            pos += step;
+        }
+        else
+        {
+            break;
+        }
+    }
+    return n;
+}
+
 export function activate(context: vscode.ExtensionContext) {
 
     let disposable = vscode.commands.registerCommand('extension.replaceWithTabStopSyntax', () => {
@@ -74,21 +109,35 @@ export function activate(context: vscode.ExtensionContext) {
 
         // Get selected text
         let selection = editor.selection;
-        let text = editor.document.getText(selection);
+        let text:any = editor.document.getText(selection);
 
         // Support multi-line choices
         if(!selection.isSingleLine) {
-            var r;
-            text = ((function() {
-                var i, len, ref, results;
+            var i, j, len, r;
+
+            text = (function() {
+                var j, len, ref, results;
                 ref = text.split(/\r?\n/);
                 results = [];
-                for (i = 0, len = ref.length; i < len; i++) {
-                r = ref[i];
-                    results.push(r.replace(",", "\\,"));
+                for (j = 0, len = ref.length; j < len; j++) {
+                    r = ref[j];
+                    results.push(r.replace(/,/g, "\\,"));
                 }
                 return results;
-            })()).join(",");
+            })();
+
+            for (i = j = 0, len = text.length; j < len; i = ++j) {
+                r = text[i];
+                if (/^\^{3,}$/.test(r)) {
+                    text[i - 1] = "╔═" + "═".repeat(text[i - 1].length - occurrences(text[i - 1], ",", false)) + "═╗" + "," + "║ " + text[i - 1] + " ║" + "," + "╚═" + "═".repeat(text[i - 1].length - occurrences(text[i - 1], ",", false)) + "═╝";
+                }
+            }
+
+            text = text.filter(function(s:any) {
+                return !/^\^{3,}$/.test(s);
+            });
+
+            text = text.join(",");
         }
 
         // Replace selected text with choice tab stop syntax
@@ -241,8 +290,6 @@ export function activate(context: vscode.ExtensionContext) {
             vscode.window.showInformationMessage(snippet_file_name + " created!");
 
         });
-
-
     });
 
     context.subscriptions.push(disposable);
