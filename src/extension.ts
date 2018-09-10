@@ -57,6 +57,34 @@ function occurrences(string:any, subString:any, allowOverlapping:boolean) {
     return n;
 }
 
+function settings() {
+    const osName = os.type();
+    let newline = "\r\n", user_directory;
+    switch (osName) {
+        case ("Darwin"): {
+            newline = "\n";
+            user_directory = process.env.HOME + "/Library/Application Support/Code/User/";
+            break;
+        }
+        case ("Linux"): {
+            newline = "\n";
+            user_directory = process.env.HOME + "/.config/Code/User/";
+            break;
+        }
+        case ("Windows_NT"): {
+            newline = "\r\n";
+            user_directory = process.env.APPDATA + "\\Code\\User\\";
+            break;
+        }
+        default: {
+            newline = "\n";
+            user_directory = process.env.HOME + "/.config/Code/User/";
+            break;
+        }
+    }
+    return {"newline": newline, "user_directory": user_directory};
+}
+
 export function activate(context: vscode.ExtensionContext) {
 
     let disposable = vscode.commands.registerCommand('extension.replaceWithTabStopSyntax', () => {
@@ -94,13 +122,14 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(disposable);
 
     disposable = vscode.commands.registerCommand('extension.replaceWithTabStopChoiceSyntax', () => {
-        // The code you place here will be executed every time your command is executed
-
         let editor = vscode.window.activeTextEditor;
 
         if (!editor) {
             return;
         }
+
+        let st = settings();
+        let newline = st.newline;
 
         // Get the counter to be used in current tab stop
         let counter = context.globalState.get("counter", 10);
@@ -111,39 +140,75 @@ export function activate(context: vscode.ExtensionContext) {
         let selection = editor.selection;
         let text:any = editor.document.getText(selection);
 
-        // Support multi-line choices
-        if(!selection.isSingleLine) {
-            var i, j, len, r;
+        //${120|╔════════╗,║ header ║,╚════════╝,ite\,\,m 1,item\, 3|}
 
-            text = (function() {
-                var j, len, ref, results;
-                ref = text.split(/\r?\n/);
-                results = [];
-                for (j = 0, len = ref.length; j < len; j++) {
-                    r = ref[j];
-                    results.push(r.replace(/,/g, "\\,"));
-                }
-                return results;
-            })();
+        if (/^\$\{\d+\|.+\|\}$/.test(text)) {
+            // We are reversing a choice tabstop
+            // Remove prefix and suffix
+            text = text.replace(/^\$\{\d+\||\|\}$/g, "")
 
-            for (i = j = 0, len = text.length; j < len; i = ++j) {
-                r = text[i];
-                if (/^\^{3,}$/.test(r)) {
-                    text[i - 1] = "╔═" + "═".repeat(text[i - 1].length - occurrences(text[i - 1], ",", false)) + "═╗" + "," + "║ " + text[i - 1] + " ║" + "," + "╚═" + "═".repeat(text[i - 1].length - occurrences(text[i - 1], ",", false)) + "═╝";
-                }
+            const regex = /(?=.)([^,\\]*(?:\\.[^,\\]*)*)(?:,|$)/gm;
+            let m, splited_text:any = [], splited_text2:any = [];
+
+            while ((m = regex.exec(text)) !== null) {
+                splited_text.push(m[1]);
             }
 
-            text = text.filter(function(s:any) {
-                return !/^\^{3,}$/.test(s);
+            for (let i = 0; i < splited_text.length; i++) {
+                const e = splited_text[i];
+                if (/^╔═*╗$/.test(e)) {
+                    continue;
+                }
+
+                if (/^╚═*╝$/.test(e)) {
+                    splited_text2.push("^^^");
+                    continue;
+                }
+
+                const e2 = e.replace(/^║\s*|\s*║$/g, "");
+                const e3 = e2.replace(/\\,/g, ",");
+                splited_text2.push(e3);
+            }
+
+            editor.edit(builder => {
+                builder.replace(selection, splited_text2.join(newline));
             });
-
-            text = text.join(",");
         }
+        else {
+            // We are creating a choice tabstop
+            // Support multi-line choices
+            if(!selection.isSingleLine) {
+                var i, j, len, r;
 
-        // Replace selected text with choice tab stop syntax
-        editor.edit(builder => {
-            builder.replace(selection, '${' + counter + '|' + text + '|}');
-        });
+                text = (function() {
+                    var j, len, ref, results;
+                    ref = text.split(/\r?\n/);
+                    results = [];
+                    for (j = 0, len = ref.length; j < len; j++) {
+                        r = ref[j];
+                        results.push(r.replace(/,/g, "\\,"));
+                    }
+                    return results;
+                })();
+
+                for (i = j = 0, len = text.length; j < len; i = ++j) {
+                    r = text[i];
+                    if (/^\^{3,}$/.test(r)) {
+                        text[i - 1] = "╔═" + "═".repeat(text[i - 1].length - occurrences(text[i - 1], ",", false)) + "═╗" + "," + "║ " + text[i - 1] + " ║" + "," + "╚═" + "═".repeat(text[i - 1].length - occurrences(text[i - 1], ",", false)) + "═╝";
+                    }
+                }
+
+                text = text.filter(function(s:any) {
+                    return !/^\^{3,}$/.test(s);
+                });
+                text = text.join(",");
+            }
+
+            // Replace selected text with choice tab stop syntax
+            editor.edit(builder => {
+                builder.replace(selection, '${' + counter + '|' + text + '|}');
+            });
+        }
     });
 
     context.subscriptions.push(disposable);
@@ -228,30 +293,8 @@ export function activate(context: vscode.ExtensionContext) {
         line = o.line;
         let snippet_body = o.other;
 
-        const osName = os.type();
-        let newline = "\r\n", user_directory;
-        switch (osName) {
-            case ("Darwin"): {
-                newline = "\n";
-                user_directory = process.env.HOME + "/Library/Application Support/Code/User/";
-                break;
-            }
-            case ("Linux"): {
-                newline = "\n";
-                user_directory = process.env.HOME + "/.config/Code/User/";
-                break;
-            }
-            case ("Windows_NT"): {
-                newline = "\r\n";
-                user_directory = process.env.APPDATA + "\\Code\\User\\";
-                break;
-            }
-            default: {
-                newline = "\n";
-                user_directory = process.env.HOME + "/.config/Code/User/";
-                break;
-            }
-        }
+        let st = settings();
+        let newline = st.newline, user_directory = st.user_directory;
 
         let snippet_folder:any;
         let portable_data_path = process.env['VSCODE_PORTABLE'];
