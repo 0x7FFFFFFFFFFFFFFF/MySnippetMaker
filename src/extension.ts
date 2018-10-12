@@ -225,7 +225,7 @@ export function activate(context: vscode.ExtensionContext) {
         // With \ (backslash), you can escape $, } and \
         // Within choice elements, the backslash also escapes comma and pipe characters. ${1|one,two,three| }
 
-        let editor = vscode.window.activeTextEditor;
+        let editor = vscode.window.activeTextEditor!;
 
         if (!editor) {
             return;
@@ -236,16 +236,16 @@ export function activate(context: vscode.ExtensionContext) {
         let text = editor.document.getText(selection);
         let has_selection = true;
         let full_range: vscode.Range;
+        let old_position_when_no_selection: vscode.Position;
 
         // If there is a selection, get the selected text
         // If there is no selection, get all document text
         if (text == null || text == "") {
             has_selection = false;
             text = editor.document.getText();
-            full_range = new vscode.Range(
-                editor.document.positionAt(0),
-                editor.document.positionAt(text.length - 1)
-            );
+            old_position_when_no_selection = editor.selection.active;
+            let invalid_range = new vscode.Range(0, 0, editor.document.lineCount /*intentionally missing the '-1' */, 0);
+            full_range = editor.document.validateRange(invalid_range);
         }
         text = text.replace(/([\$\\\}])/g, "\\$1");
 
@@ -255,6 +255,11 @@ export function activate(context: vscode.ExtensionContext) {
                 builder.replace(selection, text);
             } else {
                 builder.replace(full_range, text);
+            }
+        }).then(success => {
+            if (success && !has_selection) {
+                // Deselect text and keep the cursor position
+                vscode.window.activeTextEditor!.selection = new vscode.Selection(old_position_when_no_selection, old_position_when_no_selection);
             }
         });
     });
