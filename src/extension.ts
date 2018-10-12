@@ -282,12 +282,12 @@ export function activate(context: vscode.ExtensionContext) {
         o = my_split(other);
         line = o.line;
         other = o.other;
-        let snippet_scope:any, first_scope:any, snippet_prefix:any = null;
+        let snippet_scope_line_text:any, snippet_scope:any, snippet_prefix:any = null;
         try {
-            snippet_scope = ((/^Scope:\s*(.*)+$/im).exec(line))![1];
-            first_scope = snippet_scope.split(/\s*,\s*/)[0];
+            snippet_scope_line_text = ((/^Scope:\s*(.*)+$/im).exec(line))![1];
+            snippet_scope = snippet_scope_line_text.split(/\s*,\s*/)[0];
         } catch {
-            snippet_scope = first_scope = "";
+            snippet_scope_line_text = snippet_scope = "";
             try {
                 snippet_prefix = ((/^Prefix:\s*(.*)+$/im).exec(line))![1];
             } catch {
@@ -322,33 +322,31 @@ export function activate(context: vscode.ExtensionContext) {
             snippet_folder = path.join(user_directory, "snippets");
         }
 
+        let snippet_object = {};
+        snippet_object[snippet_name] = {};
+        snippet_object[snippet_name]["scope"] = snippet_scope;
+        snippet_object[snippet_name]["prefix"] = snippet_prefix;
+        snippet_object[snippet_name]["body"] = [snippet_body];
+        snippet_object[snippet_name]["description"] = snippet_name;
 
-        snippet_prefix.forEach((e: string) => {
-            let snippet_object = {};
-            snippet_object[snippet_name] = {};
-            snippet_object[snippet_name]["scope"] = snippet_scope;
-            snippet_object[snippet_name]["prefix"] = e;
-            snippet_object[snippet_name]["body"] = [snippet_body];
-            snippet_object[snippet_name]["description"] = snippet_name;
+        let snippet_json_string = JSON.stringify(snippet_object, null, 4);
 
-            let snippet_json_string = JSON.stringify(snippet_object, null, 4);
+        text = snippet_json_string + newline + newline + "// " + text.replace(/\n/g, "\n// ");
 
-            text = snippet_json_string + newline + newline + "// " + text.replace(/\n/g, "\n// ");
+        let snippet_file_name = "[" + snippet_prefix.join(", ") + " - " + snippet_name + "].code-snippets";
+        if (snippet_scope != "") {
+            snippet_file_name = snippet_scope + "." + snippet_file_name;
+        }
 
-            let snippet_file_name = "[" + e + " - " + snippet_name + "].code-snippets";
-            if (first_scope != "") {
-                snippet_file_name = first_scope + "." + snippet_file_name;
-            }
+        // Remove invalid file name characters
+        snippet_file_name = snippet_file_name.replace(/[/\\?%*:|"<>]/g, "").replace(/\s{2,}/g, " ");
 
-            snippet_file_name = snippet_file_name.replace(/[/\\?%*:|"<>]/g, "").replace(/\s{2,}/g, " ");
+        var writeStream = fs.createWriteStream(path.join(snippet_folder, snippet_file_name));
+        writeStream.write(text);
+        writeStream.end();
 
-            var writeStream = fs.createWriteStream(path.join(snippet_folder, snippet_file_name));
-            writeStream.write(text);
-            writeStream.end();
+        vscode.window.showInformationMessage(snippet_file_name + " created!");
 
-            vscode.window.showInformationMessage(snippet_file_name + " created!");
-
-        });
     });
 
     context.subscriptions.push(disposable);
