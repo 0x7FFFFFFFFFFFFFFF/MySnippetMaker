@@ -234,12 +234,28 @@ export function activate(context: vscode.ExtensionContext) {
         // Get selected text
         let selection = editor.selection;
         let text = editor.document.getText(selection);
+        let has_selection = true;
+        let full_range: vscode.Range;
 
+        // If there is a selection, get the selected text
+        // If there is no selection, get all document text
+        if (text == null || text == "") {
+            has_selection = false;
+            text = editor.document.getText();
+            full_range = new vscode.Range(
+                editor.document.positionAt(0),
+                editor.document.positionAt(text.length - 1)
+            );
+        }
         text = text.replace(/([\$\\\}])/g, "\\$1");
 
-        // Replace selected text with tab stop syntax
+        // Replace selected text or full document text with tab stop syntax
         editor.edit(builder => {
-            builder.replace(selection, text);
+            if (has_selection) {
+                builder.replace(selection, text);
+            } else {
+                builder.replace(full_range, text);
+            }
         });
     });
 
