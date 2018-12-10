@@ -2,7 +2,7 @@
     "name": "mysnippetmaker",
     "displayName": "MySnippetMaker",
     "description": "With this extension you can easily create snippets",
-    "version": "0.1.13",
+    "version": "0.1.14",
     "publisher": "yangshuai",
     "engines": {
         "vscode": "^1.28.0"
